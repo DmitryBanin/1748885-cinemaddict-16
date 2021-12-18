@@ -1,5 +1,6 @@
+import { FILM_CARDS } from '../main.js';
 export const createQuantityMoviesTemplate = () => (
   `<section class="footer__statistics">
-<p>130 291 movies inside</p>
+<p>${FILM_CARDS} movies inside</p>
 </section>`
 );

@@ -9,7 +9,6 @@ export const renderTemplate = (container, template, place) => {
   container.insertAdjacentHTML(place, template);
 };
 
-
 // container - куда мы вставляем компонент
 // template - разметка которую вставляем
 // place - в какое место относительно тега
