@@ -1,4 +1,4 @@
-import { renderElement, renderTemplate, RenderPosition } from './render.js';
+import { render, RenderPosition } from './render.js';
 import { generateFilmCard, generateComment } from './mock/card.js';
 import { getRandomIndexFromList, getRandomInteger } from './utils.js';
 import { generateFilter } from './mock/generate-filter.js';
@@ -11,7 +11,7 @@ import FilterView from './view/filter-view.js';
 import MoviesInsideView from './view/movies-inside-view.js';
 import FilmCardView from './view/film-card-view.js';
 import ButtonShowMoreView from './view/button-show-more-view.js';
-// import PopupFilmView from './view/popup-film-view.js';
+import PopupFilmView from './view/popup-film-view.js';
 
 export const FILM_CARDS = 30;
 const COMMENTS = 100;
@@ -34,11 +34,11 @@ const generetCommentsCard = (element) => {
   return element;
 };
 
-filmCards.map(generetCommentsCard); // массив карточек фильмов
+filmCards.map(generetCommentsCard);
 const filters = generateFilter(filmCards);
 
-const siteMainElement = document.querySelector('.main');
 const siteHeaderElement = document.querySelector('.header');
+const siteMainElement = document.querySelector('.main');
 const siteFooterElement = document.querySelector('.footer');
 
 const filmsComponent = new FilmsView();
@@ -46,31 +46,55 @@ const filterComponent = new FilterView(filters);
 const filmsListComponent = new FilmsListView();
 const filmsListContainerComponent = new FilmsListContainerView();
 
-renderElement(siteHeaderElement, new UserRankView().element, RenderPosition.BEFOREEND);
-renderElement(siteMainElement, filterComponent.element, RenderPosition.BEFOREEND);
-renderElement(siteMainElement, filmsComponent.element, RenderPosition.BEFOREEND);
-renderElement(filmsComponent.element, filmsListComponent.element, RenderPosition.BEFOREEND);
-renderElement(filmsListComponent.element, filmsListContainerComponent.element, RenderPosition.BEFOREEND);
-renderElement(siteFooterElement, new MoviesInsideView(filmCards.length).element, RenderPosition.BEFOREEND);
-renderElement(filterComponent.element, new SortView().element, RenderPosition.AFTEREND);
+render(siteHeaderElement, new UserRankView().element, RenderPosition.BEFOREEND);
+render(siteMainElement, filterComponent.element, RenderPosition.BEFOREEND);
+render(siteMainElement, filmsComponent.element, RenderPosition.BEFOREEND);
+render(filmsComponent.element, filmsListComponent.element, RenderPosition.BEFOREEND);
+render(filmsListComponent.element, filmsListContainerComponent.element, RenderPosition.BEFOREEND);
+render(siteFooterElement, new MoviesInsideView(filmCards.length).element, RenderPosition.BEFOREEND);
+render(filterComponent.element, new SortView().element, RenderPosition.AFTEREND);
+
+const renderFilmCard = (filmCardElement, filmCard) => {
+  const filmCardComponent = new FilmCardView(filmCard);
+  const popupfilmCardComponent = new PopupFilmView(filmCard);
+
+  const replacefilmCardToForm = () => {
+    filmCardElement.appendChild(popupfilmCardComponent.element);
+  };
+
+  const replaceFormTofilmCard = () => {
+    filmCardElement.removeChild(popupfilmCardComponent.element);
+  };
+
+  filmCardComponent.element.querySelector('.film-card__link').addEventListener('click', () => {
+    replacefilmCardToForm();
+    document.body.classList.add('hide-overflow');
+  });
+
+  popupfilmCardComponent.element.querySelector('.film-details__close-btn').addEventListener('click', (evt) => {
+    evt.preventDefault();
+    replaceFormTofilmCard();
+    document.body.classList.remove('hide-overflow');
+  });
+
+  render(filmCardElement, filmCardComponent.element, RenderPosition.BEFOREEND);
+};
 
 for (let i = 0; i < Math.min(filmCards.length, FILM_CARDS_PER_STEP); i++) {
-  renderElement(filmsListContainerComponent.element, new FilmCardView(filmCards[i]).element, RenderPosition.BEFOREEND);
-  // renderElement(siteFooterElement, new PopupFilmView(filmCards[i]).element, RenderPosition.AFTEREND);
+  renderFilmCard(filmsListContainerComponent.element, filmCards[i]);
 }
 
-// Кнопка showMore
 if (filmCards.length > FILM_CARDS_PER_STEP) {
   let renderedCardCount = FILM_CARDS_PER_STEP;
 
   const buttonShowMoreComponent = new ButtonShowMoreView();
-  renderElement(filmsListContainerComponent.element, buttonShowMoreComponent.element, RenderPosition.AFTEREND);
+  render(filmsListContainerComponent.element, buttonShowMoreComponent.element, RenderPosition.AFTEREND);
 
   buttonShowMoreComponent.element.addEventListener('click', (evt) => {
     evt.preventDefault();
     filmCards
       .slice(renderedCardCount, renderedCardCount + FILM_CARDS_PER_STEP)
-      .forEach((card) => renderElement(filmsListContainerComponent.element, new FilmCardView(card).element, RenderPosition.BEFOREEND));
+      .forEach((filmCard) => renderFilmCard(filmsListContainerComponent.element, filmCard));
 
     renderedCardCount += FILM_CARDS_PER_STEP;
 

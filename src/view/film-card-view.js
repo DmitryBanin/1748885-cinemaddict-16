@@ -5,7 +5,6 @@ import { createElement } from '../render.js';
 const createFilmCardTemplate = (card) => {
   const { filmInfo, userDetails, comments } = card;
   const { release, title, poster, totalRating, genre, description, runTime } = filmInfo;
-  // const { release } = filmInfo;
   const { date } = release;
   const durationFormat = getTimeFromMins(runTime);
   const yearFormat = dayjs(date).format('YYYY');
@@ -14,8 +13,8 @@ const createFilmCardTemplate = (card) => {
   const watchedSelect = watched ? ' ' : 'film-card__controls-item--active';
   const favoriteSelect = favorite ? ' ' : 'film-card__controls-item--active';
   const commentsSelect = comments.length;
-  return `
-    <article class="film-card">
+  // hide-overflow
+  return `<article class="film-card">
       <a class="film-card__link">
         <h3 class="film-card__title">${title}</h3>
         <p class="film-card__rating">${totalRating}</p>
