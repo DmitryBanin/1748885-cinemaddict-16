@@ -14,7 +14,7 @@ import FilmCardView from './view/film-card-view.js';
 import ButtonShowMoreView from './view/button-show-more-view.js';
 import PopupFilmView from './view/popup-film-view.js';
 
-export const FILM_CARDS = 0;
+export const FILM_CARDS = 30;
 const COMMENTS = 100;
 const FILM_CARDS_PER_STEP = 5;
 const FILM_COMMENTS = 20;
@@ -24,18 +24,18 @@ const generetIdIndex = (element, index) => {
   return element;
 };
 
-const filmCards = Array.from({ length: FILM_CARDS }, generateFilmCard);
-filmCards.map(generetIdIndex);
-
 const comments = Array.from({ length: COMMENTS }, generateComment);
-comments.map(generetIdIndex);
 
 const generetCommentsCard = (element) => {
   element.comments = getRandomIndexFromList(comments, getRandomInteger(FILM_COMMENTS));
   return element;
 };
 
+const filmCards = Array.from({ length: FILM_CARDS }, generateFilmCard);
+filmCards.map(generetIdIndex);
 filmCards.map(generetCommentsCard);
+comments.map(generetIdIndex);
+
 const filters = generateFilter(filmCards);
 
 const siteHeaderElement = document.querySelector('.header');
@@ -47,8 +47,8 @@ const filterComponent = new FilterView(filters);
 const filmsListComponent = new FilmsListView();
 const filmsListContainerComponent = new FilmsListContainerView();
 
-render(siteHeaderElement, new UserRankView().element, RenderPosition.BEFOREEND);
 render(siteMainElement, filterComponent.element, RenderPosition.BEFOREEND);
+render(siteHeaderElement, new UserRankView().element, RenderPosition.BEFOREEND);
 render(siteMainElement, filmsComponent.element, RenderPosition.BEFOREEND);
 render(filmsComponent.element, filmsListComponent.element, RenderPosition.BEFOREEND);
 render(filmsListComponent.element, filmsListContainerComponent.element, RenderPosition.BEFOREEND);
@@ -88,10 +88,9 @@ const renderFilmCard = (filmCardElement, filmCard) => {
   });
 
   render(filmCardElement, filmCardComponent.element, RenderPosition.BEFOREEND);
+
+
 };
-
-console.log(filterComponent.element.querySelectorAll('.main-navigation__item'));
-
 
 if (!filmCards.length) {
   render(filmsListContainerComponent.element, new ListEmptyView().element, RenderPosition.BEFOREEND);
@@ -123,3 +122,5 @@ if (!filmCards.length) {
     });
   }
 }
+
+
