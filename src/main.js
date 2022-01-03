@@ -1,17 +1,19 @@
-import { renderTemplate, RenderPosition } from './render.js';
-import { createUserRankTemplate } from './view/user-rank-view.js';
-import { createMenuTemplate } from './view/menu-view.js';
-import { createFilmCardTemplate } from './view/film-card-view.js';
-// import { createPopupFilmInformationTemplate } from './view/popup-film-view.js';
-import { createCommensTemplate } from './view/popup-comments-view.js';
-import { createQuantityMoviesTemplate } from './view/quantity-movies-view.js';
-import { createShowMoreTemplate } from './view/button-show-more-view.js';
+import { render, RenderPosition } from './render.js';
 import { generateFilmCard, generateComment } from './mock/card.js';
 import { getRandomIndexFromList, getRandomInteger } from './utils.js';
-import { createFilterTemplate } from './mock/filter.js';
 import { generateFilter } from './mock/generate-filter.js';
+import SortView from './view/sort-view.js';
+import UserRankView from './view/user-rank-view.js';
+import FilmsView from './view/films-view.js';
+import FilmsListView from './view/films-list-view.js';
+import FilmsListContainerView from './view/films-list-container-view.js';
+import FilterView from './view/filter-view.js';
+import MoviesInsideView from './view/movies-inside-view.js';
+import FilmCardView from './view/film-card-view.js';
+import ButtonShowMoreView from './view/button-show-more-view.js';
+import PopupFilmView from './view/popup-film-view.js';
 
-export const FILM_CARDS = 50;
+export const FILM_CARDS = 30;
 const COMMENTS = 100;
 const FILM_CARDS_PER_STEP = 5;
 const FILM_COMMENTS = 20;
@@ -32,49 +34,73 @@ const generetCommentsCard = (element) => {
   return element;
 };
 
-filmCards.map(generetCommentsCard); // массив карточек фильмов
+filmCards.map(generetCommentsCard);
 const filters = generateFilter(filmCards);
 
-const siteMainElement = document.querySelector('.main');     // main
-const siteHeaderElement = document.querySelector('.header'); // header
-const siteFooterElement = document.querySelector('.footer'); // footer
+const siteHeaderElement = document.querySelector('.header');
+const siteMainElement = document.querySelector('.main');
+const siteFooterElement = document.querySelector('.footer');
 
-renderTemplate(siteHeaderElement, createUserRankTemplate(), RenderPosition.BEFOREEND); // в header отрисовываем рейтинг (user-rank)
-renderTemplate(siteMainElement, createFilterTemplate(filters), RenderPosition.BEFOREEND); // в main отрисовываем меню (menu-view)
-renderTemplate(siteMainElement, createMenuTemplate(), RenderPosition.BEFOREEND); // в main отрисовываем меню (menu-view)
-renderTemplate(siteFooterElement, createQuantityMoviesTemplate(), RenderPosition.BEFOREEND); // в footer прописываем число количества фильмов (quantity-movies)
+const filmsComponent = new FilmsView();
+const filterComponent = new FilterView(filters);
+const filmsListComponent = new FilmsListView();
+const filmsListContainerComponent = new FilmsListContainerView();
 
-const filmListElement = siteMainElement.querySelector('.films-list'); // ищем <section class="films-list"></section>
-const filmListContainerElement = filmListElement.querySelector('.films-list__container'); // ищем <div class="films-list__container">
+render(siteHeaderElement, new UserRankView().element, RenderPosition.BEFOREEND);
+render(siteMainElement, filterComponent.element, RenderPosition.BEFOREEND);
+render(siteMainElement, filmsComponent.element, RenderPosition.BEFOREEND);
+render(filmsComponent.element, filmsListComponent.element, RenderPosition.BEFOREEND);
+render(filmsListComponent.element, filmsListContainerComponent.element, RenderPosition.BEFOREEND);
+render(siteFooterElement, new MoviesInsideView(filmCards.length).element, RenderPosition.BEFOREEND);
+render(filterComponent.element, new SortView().element, RenderPosition.AFTEREND);
 
-// отрисовываем карточки фильма и попап после .films-list__container в (menu-view)
+const renderFilmCard = (filmCardElement, filmCard) => {
+  const filmCardComponent = new FilmCardView(filmCard);
+  const popupfilmCardComponent = new PopupFilmView(filmCard);
+
+  const replacefilmCardToForm = () => {
+    filmCardElement.appendChild(popupfilmCardComponent.element);
+  };
+
+  const replaceFormTofilmCard = () => {
+    filmCardElement.removeChild(popupfilmCardComponent.element);
+  };
+
+  filmCardComponent.element.querySelector('.film-card__link').addEventListener('click', () => {
+    replacefilmCardToForm();
+    document.body.classList.add('hide-overflow');
+  });
+
+  popupfilmCardComponent.element.querySelector('.film-details__close-btn').addEventListener('click', (evt) => {
+    evt.preventDefault();
+    replaceFormTofilmCard();
+    document.body.classList.remove('hide-overflow');
+  });
+
+  render(filmCardElement, filmCardComponent.element, RenderPosition.BEFOREEND);
+};
+
 for (let i = 0; i < Math.min(filmCards.length, FILM_CARDS_PER_STEP); i++) {
-  renderTemplate(filmListContainerElement, createFilmCardTemplate(filmCards[i]), RenderPosition.BEFOREEND);
-  // renderTemplate(siteFooterElement, createPopupFilmInformationTemplate(filmCards[i]), RenderPosition.AFTEREND);
+  renderFilmCard(filmsListContainerComponent.element, filmCards[i]);
 }
 
-const filmDetailsElement = document.querySelectorAll('.film-details__comments-list');
-
-filmDetailsElement.forEach((element) => renderTemplate(element, createCommensTemplate(), RenderPosition.BEFOREEND));
-
-// Кнопка showMore
 if (filmCards.length > FILM_CARDS_PER_STEP) {
   let renderedCardCount = FILM_CARDS_PER_STEP;
 
-  renderTemplate(filmListElement, createShowMoreTemplate(), RenderPosition.BEFOREEND);
+  const buttonShowMoreComponent = new ButtonShowMoreView();
+  render(filmsListContainerComponent.element, buttonShowMoreComponent.element, RenderPosition.AFTEREND);
 
-  const showMoreButton = filmListElement.querySelector('.films-list__show-more'); // ищем в <section class="films-list"></section>
-
-  showMoreButton.addEventListener('click', (evt) => {
+  buttonShowMoreComponent.element.addEventListener('click', (evt) => {
     evt.preventDefault();
     filmCards
       .slice(renderedCardCount, renderedCardCount + FILM_CARDS_PER_STEP)
-      .forEach((card) => renderTemplate(filmListContainerElement, createFilmCardTemplate(card), RenderPosition.BEFOREEND));
+      .forEach((filmCard) => renderFilmCard(filmsListContainerComponent.element, filmCard));
 
     renderedCardCount += FILM_CARDS_PER_STEP;
 
     if (renderedCardCount >= filmCards.length) {
-      showMoreButton.remove();
+      buttonShowMoreComponent.element.remove();
+      buttonShowMoreComponent.element.removeElement();
     }
   });
 }
