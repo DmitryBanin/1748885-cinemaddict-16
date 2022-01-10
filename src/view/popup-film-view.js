@@ -1,7 +1,7 @@
+import AbstractView from './abstract-view.js';
 import dayjs from 'dayjs';
 import { getTimeFromMins } from '../utils.js';
 import { createPopupCommentsTemplate } from './popup-comments-view.js';
-import { createElement } from '../render.js';
 
 const createPopupFilmTemplate = (data) => {
   const { filmInfo, userDetails, comments } = data;
@@ -139,27 +139,25 @@ const createPopupFilmTemplate = (data) => {
       </section>`;
 };
 
-export default class PopupFilmView {
-  #element = null;
+export default class PopupFilmView extends AbstractView {
   #filmCard = null;
 
   constructor(filmCard) {
+    super();
     this.#filmCard = filmCard;
-  }
-
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-
-    return this.#element;
   }
 
   get template() {
     return createPopupFilmTemplate(this.#filmCard);
   }
 
-  removeElement() {
-    this.#element = null;
+  setFormPopupHandler = (callback) => {
+    this._callback.formClick = callback;
+    this.element.querySelector('.film-details__close-btn').addEventListener('click', this.#formPopupHandler);
+  }
+
+  #formPopupHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.formClick();
   }
 }

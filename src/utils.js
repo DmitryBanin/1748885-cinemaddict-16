@@ -36,3 +36,8 @@ export const getRandomDate = (start, end) => {
   end = new Date(end).getTime();
   return  new Date(start + Math.random() * (end - start));
 };
+
+export const generetIdIndex = (element, index) => {
+  element.id = index;
+  return element;
+};
