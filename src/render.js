@@ -1,37 +1,48 @@
+import AbstractView from './view/abstract-view.js';
+
 export const RenderPosition = {
-  BEFOREBEGIN: 'beforebegin', // перед elem
-  AFTERBEGIN: 'afterbegin', // внутрь elem, в самое начало
-  BEFOREEND: 'beforeend', // внутрь elem, в конец
-  AFTEREND: 'afterend', // после elem
+  BEFOREBEGIN: 'beforebegin',
+  AFTERBEGIN: 'afterbegin',
+  BEFOREEND: 'beforeend',
+  AFTEREND: 'afterend',
 };
 
-// container - куда мы вставляем компонент
-// template - разметка которую вставляем
-// place - в какое место относительно тега
 export const render = (container, element, place) => {
+  const parent = container instanceof AbstractView ? container.element : container;
+  const child = element instanceof AbstractView ? element.element : element;
+
   switch (place) {
     case RenderPosition.BEFOREBEGIN:
-      container.before(element);
+      parent.before(child);
       break;
     case RenderPosition.AFTERBEGIN:
-      container.prepend(element);
+      parent.prepend(child);
       break;
     case RenderPosition.BEFOREEND:
-      container.append(element);
+      parent.append(child);
       break;
     case RenderPosition.AFTEREND:
-      container.after(element);
+      parent.after(child);
       break;
   }
 };
 
-// Принцип работы прост:
-// 1. создаём пустой div-блок
-// 2. берём HTML в виде строки и вкладываем в этот div-блок, превращая в DOM-элемент
-// 3. возвращаем этот DOM-элемент
 export const createElement = (template) => {
-  const newElement = document.createElement('div'); // 1
-  newElement.innerHTML = template; // 2
+  const newElement = document.createElement('div');
+  newElement.innerHTML = template;
 
-  return newElement.firstElementChild; // 3
+  return newElement.firstElementChild;
+};
+
+export const remove = (component) => {
+  if (component === null) {
+    return;
+  }
+
+  if (!(component instanceof AbstractView)) {
+    throw new Error('Can remove only components');
+  }
+
+  component.element.remove();
+  component.removeElement();
 };

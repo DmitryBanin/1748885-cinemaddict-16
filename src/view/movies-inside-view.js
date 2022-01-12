@@ -1,32 +1,19 @@
-import { createElement } from '../render.js';
+import AbstractView from './abstract-view.js';
 
-const createMoviesInsideTemplate = (cards) => (
+const createMoviesInsideTemplate = (count) => (
   `<section class="footer__statistics">
-<p>${cards} movies inside</p>
+<p>${count} movies inside</p>
 </section>`
 );
+export default class MoviesInsideView extends AbstractView {
+  #movies = null;
 
-export default class MoviesInsideView {
-  #element = null;
-  #moviesInside = null;
-
-  constructor(moviesInside) {
-    this.#moviesInside = moviesInside;
-  }
-
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-
-    return this.#element;
+  constructor(movies) {
+    super();
+    this.#movies = movies;
   }
 
   get template() {
-    return createMoviesInsideTemplate(this.#moviesInside);
-  }
-
-  removeElement() {
-    this.#element = null;
+    return createMoviesInsideTemplate(this.#movies);
   }
 }
